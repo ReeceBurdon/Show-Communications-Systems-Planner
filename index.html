@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Green-GO system planner — 4wall</title>
+<title>Show Communications Systems Planner — 4wall</title>
 <style>
   :root {
     --bg: #FAF8F3;
@@ -72,7 +72,9 @@
   .row-rooms { grid-template-columns: 1fr; }
   .row-links { grid-template-columns: 1fr 1fr 1fr auto; }
   .room-meta { font-size: 12px; color: var(--muted); padding-left: 2px; }
-  .row-devices { grid-template-columns: 1.1fr 1.3fr 1fr 1fr auto; }
+  .row-devices-stack { display: block; }
+  .row-devices-stack .dev-type-select { width: 100%; margin-bottom: 8px; }
+  .row-devices-bottom { display: grid; grid-template-columns: 1.1fr 1fr 1fr auto; gap: 8px; align-items: center; }
   .row-users-top { grid-template-columns: 1fr 1fr 1fr auto; }
   .row-misc { display: flex; align-items: center; justify-content: space-between; }
   label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
@@ -102,6 +104,7 @@
   }
   button:hover { background: var(--info-bg); }
   .btn-add { display: flex; align-items: center; gap: 6px; }
+  .btn-add-below { margin-top: 4px; }
   .btn-remove { padding: 6px 9px; }
   .btn-primary {
     background: var(--green);
@@ -130,6 +133,29 @@
   .radio-group input { width: auto; }
   .conditional { display: none; flex-direction: column; gap: 10px; }
   .conditional.show { display: flex; }
+  .system-toggle { display: flex; gap: 10px; margin-bottom: 22px; }
+  .system-toggle-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--muted);
+    background: var(--card);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .system-toggle-option input { display: none; }
+  .system-toggle-option:has(input:checked) {
+    border-color: var(--green);
+    color: var(--green-dark);
+    background: var(--info-bg);
+  }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
   .top-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px; }
   .user-extra { display: flex; align-items: center; gap: 16px; padding-left: 2px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
@@ -162,11 +188,13 @@
   #submit-status.err { color: #993C1D; }
   .copy-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   @media (max-width: 600px) {
-    .row-devices { grid-template-columns: 1fr; }
+    .row-devices-bottom { grid-template-columns: 1fr; }
     .row-users-top { grid-template-columns: 1fr; }
     .row-links { grid-template-columns: 1fr; }
     .two-col { grid-template-columns: 1fr; }
     .top-fields { grid-template-columns: 1fr; }
+    .misc-add-row { flex-wrap: wrap; }
+    .misc-add-row select { flex-basis: 100%; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -180,8 +208,19 @@
     <span class="eyebrow">COMMS BUILD SHEET</span>
     <span class="version-tag" id="version-tag"></span>
   </div>
-  <h1>Green-GO system planner</h1>
+  <h1 id="page-title">Show Communications Systems Planner</h1>
   <p class="sub">Fill in who needs to talk to who. No tech knowledge needed — leave anything blank if you're not sure. When you're done, hit submit at the bottom and it'll land straight in Reece's inbox.</p>
+
+  <div class="system-toggle">
+    <label class="system-toggle-option">
+      <input type="radio" name="system-choice" value="greengo" id="system-greengo" checked>
+      <span>Green-GO</span>
+    </label>
+    <label class="system-toggle-option">
+      <input type="radio" name="system-choice" value="bolero" id="system-bolero">
+      <span>Riedel Bolero</span>
+    </label>
+  </div>
 
   <div class="top-fields">
     <div>
@@ -201,32 +240,26 @@
   <hr>
 
   <div class="section">
-    <div class="section-head">
-      <h2>Rooms / zones</h2>
-      <button id="add-room" class="btn-add" type="button"><span>+</span>Add room</button>
-    </div>
+    <h2>Rooms / zones</h2>
     <p class="section-desc">Every physical space with any kit in it — list all of them, wireless or not. This is your site plan.</p>
     <div id="room-list"></div>
+    <button id="add-room" class="btn-add btn-add-below" type="button"><span>+</span>Add room</button>
 
     <div style="margin-top: 20px;">
-      <div class="section-head">
-        <p style="font-size: 13px; margin: 0; font-weight: 600;">Room-to-room links</p>
-        <button id="add-link" class="btn-add" type="button"><span>+</span>Add link</button>
-      </div>
+      <p style="font-size: 13px; margin: 0; font-weight: 600;">Room-to-room links</p>
       <p style="font-size: 12.5px; color: var(--muted); margin: 4px 0 10px;">If any rooms need a physical or network link between them — e.g. a cable run or network trunk joining two rooms into one system — add one row per link. Leave empty if none are needed.</p>
       <div id="link-list"></div>
+      <button id="add-link" class="btn-add btn-add-below" type="button"><span>+</span>Add link</button>
     </div>
   </div>
 
   <hr>
 
   <div class="section">
-    <div class="section-head">
-      <h2>Devices</h2>
-      <button id="add-device" class="btn-add" type="button"><span>+</span>Add device</button>
-    </div>
+    <h2>Devices</h2>
     <p class="section-desc">Every beltpack, desk station or rack unit — give it a room, and an optional note for exactly where it sits.</p>
     <div id="device-list"></div>
+    <button id="add-device" class="btn-add btn-add-below" type="button"><span>+</span>Add device</button>
     <div id="antenna-summary" class="calc-box" style="display:none;"></div>
   </div>
 
@@ -240,7 +273,7 @@
         <label for="battery-base">Wireless packs (auto)</label>
         <input type="text" id="battery-base" value="0" disabled style="background:var(--bg); color:var(--muted);">
       </div>
-      <div>
+      <div id="battery-spares-field">
         <label for="battery-spares">Spare batteries</label>
         <input type="number" id="battery-spares" value="0" min="0">
       </div>
@@ -255,23 +288,19 @@
   <hr>
 
   <div class="section">
-    <div class="section-head">
-      <h2>Users</h2>
-      <button id="add-user" class="btn-add" type="button"><span>+</span>Add user</button>
-    </div>
+    <h2>Users</h2>
     <p class="section-desc">Who's on the system, their role, device, headset, and whether they move between rooms.</p>
     <div id="user-list"></div>
+    <button id="add-user" class="btn-add btn-add-below" type="button"><span>+</span>Add user</button>
   </div>
 
   <hr>
 
   <div class="section">
-    <div class="section-head">
-      <h2>Groups</h2>
-      <button id="add-group" class="btn-add" type="button"><span>+</span>Add group</button>
-    </div>
-    <p class="section-desc">A channel of people who talk together — e.g. "Camera", "Stage Management". Tick who's in it, and whether they can talk or only listen. If members span more than one room, that's a cross-room talk link — it's flagged automatically.</p>
+    <h2>Groups / Partylines</h2>
+    <p class="section-desc">Riedel calls these partylines. A channel of people who talk together — e.g. "Camera", "Stage Management". Tick who's in it, and whether they can talk or only listen. If members span more than one room, that's a cross-room talk link — it's flagged automatically.</p>
     <div id="group-list"></div>
+    <button id="add-group" class="btn-add btn-add-below" type="button"><span>+</span>Add group</button>
   </div>
 
   <hr>
@@ -289,7 +318,7 @@
         <input type="text" id="pgm-source" placeholder="e.g. FOH mix, paging mic, broadcast feed">
       </div>
       <div>
-        <label>Which group(s) should hear it?</label>
+        <label>Which group(s)/partyline(s) should hear it?</label>
         <div id="pgm-group-checks" style="display: flex; flex-direction: column; gap: 6px;"></div>
       </div>
     </div>
@@ -297,7 +326,7 @@
 
   <hr>
 
-  <div class="section">
+  <div class="section" id="radio-section">
     <h2>Radio integration</h2>
     <p class="section-desc">Does the comms system need to talk to two-way radios (via the Green-GO RDX unit)?</p>
     <div class="radio-group">
@@ -320,7 +349,7 @@
 
   <div class="section">
     <h2>Misc / interfaces</h2>
-    <p class="section-desc">Any additional interfaces or accessories needed — pick from the list and set a quantity.</p>
+    <p class="section-desc" id="misc-section-desc">Any additional interfaces or accessories needed — pick from the list and set a quantity.</p>
     <div class="misc-add-row">
       <select id="misc-select"></select>
       <input type="number" id="misc-qty" value="1" min="1">
@@ -355,7 +384,7 @@
 (function() {
   // ---- CONFIG ----
   // Bump this string each time you upload a new version, so it's visible on the page.
-  var PLANNER_VERSION = "v2.2";
+  var PLANNER_VERSION = "v3.5";
   // Replace this with your real Formspree endpoint, e.g. "https://formspree.io/f/abcd1234"
   var FORMSPREE_ENDPOINT = "https://formspree.io/f/mbdvddvk";
 
@@ -392,8 +421,96 @@
   var headsetTypes = ["Single muff", "Dual muff"];
   var linkMethods = ["Dante", "Network link", "4-wire", "2-wire", "Other"];
 
+  // ---- Riedel Bolero — second system, selected via the toggle at the top ----
+  // Bolero has no dedicated per-device I-Codes in the stock list, so every
+  // Bolero device/antenna/accessory is logged against a single generic
+  // "MISC" code — the kit list still tallies quantities correctly, it just
+  // can't point to a specific catalogue item the way Green-GO can.
+  var BOLERO_MISC_CODE = "MISC";
+  var boleroDeviceCatalogue = [
+    { label: "PunQtum Wired Beltpack", code: BOLERO_MISC_CODE },
+    { label: "Bolero Wireless Beltpack", code: BOLERO_MISC_CODE + "-WBP" },
+    { label: "DSP-1216HL — Desktop SmartPanel", code: BOLERO_MISC_CODE },
+    { label: "RSP-1216HL — Rack SmartPanel", code: BOLERO_MISC_CODE },
+    { label: "RSP-1232HL — Rack SmartPanel", code: BOLERO_MISC_CODE },
+    { label: "DCP-1016E — Desktop Control Panel", code: BOLERO_MISC_CODE },
+    { label: "DCP-2016P — Desktop Control Panel", code: BOLERO_MISC_CODE },
+    { label: "DCP-2116P — Desktop Control Panel", code: BOLERO_MISC_CODE },
+    { label: "DCP-5108 — Desktop Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-1012E — Rack Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-1028E — Rack Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-1112 OLED — Rack Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-1128 OLED — Rack Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-2016 — Rack Control Panel", code: BOLERO_MISC_CODE },
+    { label: "RCP-2016P — Rack Control Panel", code: BOLERO_MISC_CODE }
+  ];
+  // A distinct internal code so wireless Bolero packs can still be told apart
+  // from wired ones for antenna/charger maths, even though both are "Misc"
+  // on the kit list.
+  var BOLERO_WIRELESS_CODE = BOLERO_MISC_CODE + "-WBP";
+  var BOLERO_ANTENNA = { label: "Antenna", code: BOLERO_MISC_CODE, capacity: 10 };
+  var BOLERO_CHARGER = { label: "Charging dock", code: BOLERO_MISC_CODE, capacity: 5 };
+  // Antenna mode determines whether roaming between rooms is possible.
+  // Standalone Link cannot roam; the other two can.
+  var boleroAntennaModes = [
+    { label: "Integrated Artist (Riedel Artist frame)", value: "integrated_artist", roamingCapable: true },
+    { label: "Standalone Link", value: "standalone_link", roamingCapable: false },
+    { label: "Standalone AES67", value: "standalone_aes67", roamingCapable: true }
+  ];
+  // Riedel Artist rack infrastructure — expansion panels, network/radio/IP
+  // interfaces, adapters, matrix frames, and interface cards. Relevant
+  // specifically when a room is set to Integrated Artist antenna mode.
+  // The desktop/rack SmartPanels and Control Panels live in the Devices
+  // catalogue instead, since those are user-facing stations, not rack infra.
+  var riedelArtistCatalogue = [
+    { label: 'ESP-1216HL — Expansion Panel (1200 SmartPanel)', code: BOLERO_MISC_CODE },
+    { label: 'ECP-1016E — Expansion Panel (Legacy)', code: BOLERO_MISC_CODE },
+    { label: 'RiFace G2 — Rack Unit (Radio Interface)', code: BOLERO_MISC_CODE },
+    { label: 'Connect IPx2 — Rack Unit (IP Interface)', code: BOLERO_MISC_CODE },
+    { label: 'Connect IPx8 — Rack Unit (IP Interface)', code: BOLERO_MISC_CODE },
+    { label: 'NSA-001D — External (Network Adapter)', code: BOLERO_MISC_CODE },
+    { label: 'NSA-002A — External (Network Adapter)', code: BOLERO_MISC_CODE },
+    { label: 'NSA-003A — External (Network Adapter)', code: BOLERO_MISC_CODE },
+    { label: 'FBI — External (Adapter)', code: BOLERO_MISC_CODE },
+    { label: 'CIA — External (Adapter)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-32 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-64 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-128 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-1024 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-1024 G2 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'Artist-1280 — Matrix (Matrix Frame)', code: BOLERO_MISC_CODE },
+    { label: 'AIO-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE },
+    { label: 'AES-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE },
+    { label: 'MADI-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE },
+    { label: 'AVB-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE },
+    { label: 'VoIP-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE },
+    { label: 'GPI-108 G2 — Matrix Card (Interface Card)', code: BOLERO_MISC_CODE }
+  ];
+
   var rooms = [], devices = [], users = [], groups = [], miscItems = [], links = [];
   var pgmGroupSelections = {};
+  var boleroAntennaModeChoice = {}; // keyed by room id -> mode value, since the mode is set per room's antenna deployment
+
+  function currentSystem() {
+    return document.getElementById('system-bolero').checked ? 'bolero' : 'greengo';
+  }
+  function activeDeviceCatalogue() {
+    return currentSystem() === 'bolero' ? boleroDeviceCatalogue : deviceCatalogue;
+  }
+  // Bolero has no Green-GO-style misc/interfaces of its own beyond the
+  // Riedel Artist frame hardware, which is specifically tied to Integrated
+  // Artist mode — so the misc dropdown swaps to that list under Bolero.
+  function activeMiscCatalogue() {
+    return currentSystem() === 'bolero' ? riedelArtistCatalogue : miscCatalogue;
+  }
+  function isWirelessCode(code) {
+    return code === '55300-311' || code === BOLERO_WIRELESS_CODE;
+  }
+  function isStationCode(code) {
+    // Bolero has no station/PSU distinction worth tracking separately —
+    // only Green-GO's named station codes trigger the auto-added PSU line.
+    return STATION_CODES.indexOf(code) !== -1;
+  }
 
   function uid(prefix) { return prefix + '-' + (Date.now() + Math.random()).toString(36); }
   function escapeAttr(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
@@ -412,29 +529,46 @@
   function tableRow(cols) {
     return '\u200B' + cols.map(function(c) { return padCol(c.text, c.width); }).join('');
   }
-  function isWirelessCode(code) { return code === '55300-311'; }
-  function isStationCode(code) { return STATION_CODES.indexOf(code) !== -1; }
 
   function renderRooms() {
     var list = document.getElementById('room-list');
     list.innerHTML = '';
+    var isBolero = currentSystem() === 'bolero';
     rooms.forEach(function(r) {
       var devicesInRoom = devices.filter(function(d) { return d.roomId === r.id; });
       var wirelessCount = devicesInRoom.filter(function(d) { return isWirelessCode(d.code); }).length;
       var row = document.createElement('div');
       row.className = 'row row-rooms';
+      var modeSelectHtml = '';
+      if (isBolero && wirelessCount > 0) {
+        var currentMode = boleroAntennaModeChoice[r.id] || boleroAntennaModes[0].value;
+        modeSelectHtml =
+          '<div style="margin-top:6px; display:flex; align-items:center; gap:8px;">' +
+          '<label style="font-size:12px; color:var(--muted); white-space:nowrap;">Antenna mode</label>' +
+          '<select data-id="' + r.id + '" class="bolero-antenna-mode-select" style="height:30px; font-size:12.5px; padding:4px 8px;">' +
+          boleroAntennaModes.map(function(m) { return '<option value="' + m.value + '"' + (currentMode === m.value ? ' selected' : '') + '>' + m.label + '</option>'; }).join('') +
+          '</select>' +
+          '</div>';
+      }
       row.innerHTML =
         '<div style="display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:center;">' +
         '<input type="text" placeholder="Room name, e.g. Main hall" value="' + escapeAttr(r.name) + '" data-id="' + r.id + '" class="room-input">' +
         '<button data-id="' + r.id + '" class="room-remove btn-remove" type="button">Remove</button>' +
         '</div>' +
         '<p class="room-meta">' + devicesInRoom.length + ' device' + (devicesInRoom.length === 1 ? '' : 's') +
-        (wirelessCount > 0 ? ' — ' + wirelessCount + ' wireless' : ' — no wireless') + '</p>';
+        (wirelessCount > 0 ? ' — ' + wirelessCount + ' wireless' : ' — no wireless') + '</p>' +
+        modeSelectHtml;
       list.appendChild(row);
     });
     if (rooms.length === 0) {
       list.innerHTML = '<p class="empty-note">No rooms yet — add one above before assigning devices.</p>';
     }
+    document.querySelectorAll('.bolero-antenna-mode-select').forEach(function(el) {
+      el.addEventListener('change', function() {
+        boleroAntennaModeChoice[el.dataset.id] = el.value;
+        renderAntennaSummary();
+      });
+    });
     document.querySelectorAll('.room-input').forEach(function(el) {
       el.addEventListener('input', function() {
         var r = rooms.find(function(x) { return x.id === el.dataset.id; });
@@ -451,6 +585,7 @@
           if (l.roomAId === el.dataset.id) l.roomAId = '';
           if (l.roomBId === el.dataset.id) l.roomBId = '';
         });
+        delete boleroAntennaModeChoice[el.dataset.id];
         renderRooms();
         renderDevices();
         renderLinks();
@@ -529,20 +664,30 @@
   function renderDevices() {
     var list = document.getElementById('device-list');
     list.innerHTML = '';
+    var catalogue = activeDeviceCatalogue();
     devices.forEach(function(d) {
       var row = document.createElement('div');
-      row.className = 'row row-devices';
+      row.className = 'row row-devices-stack';
       row.innerHTML =
-        '<input type="text" placeholder="Device name, e.g. FOH-1" value="' + escapeAttr(d.name) + '" data-id="' + d.id + '" data-field="name" class="dev-input">' +
-        '<select data-id="' + d.id + '" class="dev-type-select">' +
-          deviceCatalogue.map(function(t) { return '<option value="' + t.code + '"' + (d.code === t.code ? ' selected' : '') + '>' + t.label + ' (' + t.code + ')</option>'; }).join('') +
+        '<select data-id="' + d.id + '" class="dev-type-select" title="">' +
+          catalogue.map(function(t) {
+            // Match by code AND label where the device has a stored label —
+            // Bolero's codes aren't unique (many items share "MISC"), so a
+            // code-only match would always select whichever catalogue entry
+            // happens to come first, regardless of what was actually chosen.
+            var isSelected = d.typeLabel ? (d.code === t.code && d.typeLabel === t.label) : (d.code === t.code);
+            return '<option value="' + t.code + '"' + (isSelected ? ' selected' : '') + '>' + t.label + (t.code !== BOLERO_MISC_CODE && t.code !== BOLERO_WIRELESS_CODE ? ' (' + t.code + ')' : '') + '</option>';
+          }).join('') +
         '</select>' +
+        '<div class="row-devices-bottom">' +
+        '<input type="text" placeholder="Device name, e.g. FOH-1" value="' + escapeAttr(d.name) + '" data-id="' + d.id + '" data-field="name" class="dev-input">' +
         '<select data-id="' + d.id + '" class="dev-room-select">' +
           '<option value="">Select room...</option>' +
           rooms.map(function(r) { return '<option value="' + r.id + '"' + (d.roomId === r.id ? ' selected' : '') + '>' + (r.name || 'Unnamed room') + '</option>'; }).join('') +
         '</select>' +
         '<input type="text" placeholder="Specific spot (optional)" value="' + escapeAttr(d.location) + '" data-id="' + d.id + '" data-field="location" class="dev-input">' +
-        '<button data-id="' + d.id + '" class="dev-remove btn-remove" type="button">Remove</button>';
+        '<button data-id="' + d.id + '" class="dev-remove btn-remove" type="button">Remove</button>' +
+        '</div>';
       list.appendChild(row);
     });
     if (devices.length === 0) {
@@ -556,9 +701,19 @@
       });
     });
     document.querySelectorAll('.dev-type-select').forEach(function(el) {
+      el.title = el.options[el.selectedIndex] ? el.options[el.selectedIndex].textContent : '';
       el.addEventListener('change', function() {
         var d = devices.find(function(x) { return x.id === el.dataset.id; });
-        if (d) d.code = el.value;
+        if (d) {
+          d.code = el.value;
+          // Store the label as typed text too — Bolero's codes aren't unique
+          // (everything is "MISC"), so a code-only lookup can't reliably
+          // recover the right label later. Strip the trailing " (CODE)" the
+          // option text may include.
+          var selectedOption = el.options[el.selectedIndex];
+          d.typeLabel = selectedOption ? selectedOption.textContent.replace(/\s*\([^)]*\)\s*$/, '') : '';
+        }
+        el.title = el.options[el.selectedIndex] ? el.options[el.selectedIndex].textContent : '';
         refreshDeviceOptionsInUsers();
         renderAntennaSummary();
         renderBatterySummary();
@@ -592,15 +747,27 @@
 
   function calculateAntennaPlan() {
     var plan = [];
+    var isBolero = currentSystem() === 'bolero';
     rooms.forEach(function(r) {
       var wirelessInRoom = devices.filter(function(d) { return d.roomId === r.id && isWirelessCode(d.code); });
       if (wirelessInRoom.length === 0) return;
       var roamerPresent = users.some(function(u) {
         return u.roaming && wirelessInRoom.some(function(d) { return d.id === u.deviceId; });
       });
-      var antennaType = roamerPresent ? ANTENNA_STRIDE : ANTENNA_WAA;
-      var count = Math.ceil(wirelessInRoom.length / antennaType.capacity);
-      plan.push({ room: r.name || 'Unnamed room', packCount: wirelessInRoom.length, roaming: roamerPresent, antenna: antennaType, count: count });
+      if (isBolero) {
+        var modeValue = boleroAntennaModeChoice[r.id] || boleroAntennaModes[0].value;
+        var mode = boleroAntennaModes.find(function(m) { return m.value === modeValue; }) || boleroAntennaModes[0];
+        var count = Math.ceil(wirelessInRoom.length / BOLERO_ANTENNA.capacity);
+        var roamingConflict = roamerPresent && !mode.roamingCapable;
+        plan.push({
+          room: r.name || 'Unnamed room', packCount: wirelessInRoom.length, roaming: roamerPresent,
+          antenna: BOLERO_ANTENNA, count: count, mode: mode, roamingConflict: roamingConflict
+        });
+      } else {
+        var antennaType = roamerPresent ? ANTENNA_STRIDE : ANTENNA_WAA;
+        var greenGoCount = Math.ceil(wirelessInRoom.length / antennaType.capacity);
+        plan.push({ room: r.name || 'Unnamed room', packCount: wirelessInRoom.length, roaming: roamerPresent, antenna: antennaType, count: greenGoCount });
+      }
     });
     return plan;
   }
@@ -610,8 +777,17 @@
     var plan = calculateAntennaPlan();
     if (plan.length === 0) { box.style.display = 'none'; return; }
     box.style.display = 'block';
+    var isBolero = currentSystem() === 'bolero';
     box.innerHTML = '<p style="font-weight:600; margin-bottom:6px;">Antenna coverage (calculated)</p>' +
       plan.map(function(p) {
+        if (isBolero) {
+          var line = '<p>' + p.room + ': ' + p.packCount + ' wireless pack' + (p.packCount === 1 ? '' : 's') +
+            ' — ' + p.mode.label + ' → ' + p.count + ' × antenna (10 packs each)</p>';
+          if (p.roamingConflict) {
+            line += '<p style="color:#993C1D; font-weight:600;">⚠ A user in this room roams between rooms, but Standalone Link mode can\'t roam. Pick Integrated Artist or Standalone AES67 for this room, or remove the roaming flag.</p>';
+          }
+          return line;
+        }
         return '<p>' + p.room + ': ' + p.packCount + ' wireless pack' + (p.packCount === 1 ? '' : 's') +
           (p.roaming ? ' (roaming user present — needs Stride)' : ' (no roaming — standard WAA is fine)') +
           ' → ' + p.count + ' × ' + p.antenna.label + ' (' + p.antenna.code + ')</p>';
@@ -624,19 +800,33 @@
 
   function calculateBatteryPlan() {
     var base = wirelessPackCount();
+    var isBolero = currentSystem() === 'bolero';
+    if (isBolero) {
+      var chargers = Math.ceil(base / BOLERO_CHARGER.capacity);
+      return { base: base, spares: 0, total: base, chargers: chargers };
+    }
     var spares = Math.max(0, parseInt(document.getElementById('battery-spares').value, 10) || 0);
     var total = base + spares;
-    var chargers = Math.ceil(total / CHARGER.capacity);
-    return { base: base, spares: spares, total: total, chargers: chargers };
+    var greenGoChargers = Math.ceil(total / CHARGER.capacity);
+    return { base: base, spares: spares, total: total, chargers: greenGoChargers };
   }
 
   function renderBatterySummary() {
     document.getElementById('battery-base').value = wirelessPackCount();
     var plan = calculateBatteryPlan();
     var box = document.getElementById('battery-summary');
-    box.innerHTML = '<p style="font-weight:600; margin-bottom:4px;">Battery &amp; charger plan (calculated)</p>' +
-      '<p>' + plan.base + ' pack' + (plan.base === 1 ? '' : 's') + ' + ' + plan.spares + ' spare' + (plan.spares === 1 ? '' : 's') + ' = ' + plan.total + ' batteries total</p>' +
-      '<p>→ ' + plan.chargers + ' × ' + CHARGER.label + ' (' + CHARGER.code + '), each with 1 × ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')</p>';
+    var isBolero = currentSystem() === 'bolero';
+    var sparesField = document.getElementById('battery-spares-field');
+    if (sparesField) sparesField.style.display = isBolero ? 'none' : '';
+    if (isBolero) {
+      box.innerHTML = '<p style="font-weight:600; margin-bottom:4px;">Charging dock plan (calculated)</p>' +
+        '<p>Batteries are built into Bolero packs — no separate battery count needed.</p>' +
+        '<p>' + plan.base + ' wireless pack' + (plan.base === 1 ? '' : 's') + ' → ' + plan.chargers + ' × charging dock (5 packs each)</p>';
+    } else {
+      box.innerHTML = '<p style="font-weight:600; margin-bottom:4px;">Battery &amp; charger plan (calculated)</p>' +
+        '<p>' + plan.base + ' pack' + (plan.base === 1 ? '' : 's') + ' + ' + plan.spares + ' spare' + (plan.spares === 1 ? '' : 's') + ' = ' + plan.total + ' batteries total</p>' +
+        '<p>→ ' + plan.chargers + ' × ' + CHARGER.label + ' (' + CHARGER.code + '), each with 1 × ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')</p>';
+    }
     document.getElementById('charger-total-count').textContent = plan.chargers;
   }
 
@@ -829,11 +1019,10 @@
     var list = document.getElementById('misc-list');
     list.innerHTML = '';
     miscItems.forEach(function(m) {
-      var cat = miscCatalogue.find(function(x) { return x.code === m.code; });
       var row = document.createElement('div');
       row.className = 'row row-misc';
       row.innerHTML =
-        '<span>' + (cat ? cat.label : m.code) + ' <span style="color:var(--muted); font-family:monospace; font-size:12px;">(' + m.code + ')</span> × ' + m.qty + '</span>' +
+        '<span>' + (m.label || m.code) + (m.code !== BOLERO_MISC_CODE ? ' <span style="color:var(--muted); font-family:monospace; font-size:12px;">(' + m.code + ')</span>' : '') + ' × ' + m.qty + '</span>' +
         '<button data-id="' + m.id + '" class="misc-remove btn-remove" type="button">Remove</button>';
       list.appendChild(row);
     });
@@ -857,7 +1046,8 @@
     renderLinks();
   });
   document.getElementById('add-device').addEventListener('click', function() {
-    devices.push({ id: uid('dev'), name: '', code: deviceCatalogue[0].code, location: '', roomId: '' });
+    var firstType = activeDeviceCatalogue()[0];
+    devices.push({ id: uid('dev'), name: '', code: firstType.code, typeLabel: firstType.label, location: '', roomId: '' });
     renderDevices();
     renderRooms();
   });
@@ -872,16 +1062,64 @@
   });
   document.getElementById('battery-spares').addEventListener('input', renderBatterySummary);
 
+  var previousSystem = currentSystem();
+  function onSystemChange() {
+    var hasDeviceData = devices.some(function(d) { return d.name || d.location || d.roomId; });
+    var hasMiscData = miscItems.length > 0;
+    if (hasDeviceData || hasMiscData) {
+      var proceed = confirm('Switching systems will clear the devices and misc items you\'ve entered, since Green-GO and Bolero use different kit. Continue?');
+      if (!proceed) {
+        // Revert to whichever system was active before this click.
+        document.getElementById('system-greengo').checked = previousSystem === 'greengo';
+        document.getElementById('system-bolero').checked = previousSystem === 'bolero';
+        return;
+      }
+    }
+    var system = currentSystem();
+    previousSystem = system;
+    document.getElementById('radio-section').style.display = system === 'bolero' ? 'none' : '';
+    devices = [];
+    var firstType = activeDeviceCatalogue()[0];
+    devices.push({ id: uid('dev'), name: '', code: firstType.code, typeLabel: firstType.label, location: '', roomId: '' });
+    miscItems = [];
+    refreshMiscSelectOptions();
+    boleroAntennaModeChoice = {};
+    document.getElementById('battery-spares').value = 0;
+    renderDevices();
+    renderRooms();
+    renderUsers();
+    renderAntennaSummary();
+    renderBatterySummary();
+    renderMisc();
+  }
+  document.getElementById('system-greengo').addEventListener('change', onSystemChange);
+  document.getElementById('system-bolero').addEventListener('change', onSystemChange);
+
   var miscSelect = document.getElementById('misc-select');
-  miscSelect.innerHTML = miscCatalogue.map(function(m) { return '<option value="' + m.code + '">' + m.label + ' (' + m.code + ')</option>'; }).join('');
+  function refreshMiscSelectOptions() {
+    var catalogue = activeMiscCatalogue();
+    miscSelect.innerHTML = catalogue.map(function(m, idx) { return '<option value="' + idx + '">' + m.label + (m.code !== BOLERO_MISC_CODE ? ' (' + m.code + ')' : '') + '</option>'; }).join('');
+    document.getElementById('misc-section-desc').textContent = currentSystem() === 'bolero'
+      ? 'Riedel Artist frame/panel hardware — relevant if any room is using Integrated Artist mode. Pick from the list and set a quantity.'
+      : 'Any additional interfaces or accessories needed — pick from the list and set a quantity.';
+    miscSelect.title = miscSelect.options[miscSelect.selectedIndex] ? miscSelect.options[miscSelect.selectedIndex].textContent : '';
+  }
+  refreshMiscSelectOptions();
+  miscSelect.addEventListener('change', function() {
+    miscSelect.title = miscSelect.options[miscSelect.selectedIndex] ? miscSelect.options[miscSelect.selectedIndex].textContent : '';
+  });
   document.getElementById('misc-add').addEventListener('click', function() {
-    var code = miscSelect.value;
+    var catalogue = activeMiscCatalogue();
+    var selectedItem = catalogue[parseInt(miscSelect.value, 10)];
     var qty = Math.max(1, parseInt(document.getElementById('misc-qty').value, 10) || 1);
-    var existing = miscItems.find(function(x) { return x.code === code; });
+    // Match existing rows by label, not code — several catalogue entries
+    // (all of Bolero's misc/Artist items) share the same generic code, so a
+    // code-only match would silently merge distinct items together.
+    var existing = miscItems.find(function(x) { return x.label === selectedItem.label && x.code === selectedItem.code; });
     if (existing) {
       existing.qty += qty;
     } else {
-      miscItems.push({ id: uid('misc'), code: code, qty: qty });
+      miscItems.push({ id: uid('misc'), code: selectedItem.code, label: selectedItem.label, qty: qty });
     }
     document.getElementById('misc-qty').value = 1;
     renderMisc();
@@ -915,9 +1153,11 @@
     var radioModel = document.getElementById('radio-model').value;
     var radioSupplier = document.getElementById('radio-supplier').value;
 
-    function deviceLabel(code) {
-      var d = deviceCatalogue.find(function(x) { return x.code === code; });
-      return d ? d.label : code;
+    function deviceLabel(dev) {
+      if (dev && dev.typeLabel) return dev.typeLabel;
+      var code = dev && dev.code !== undefined ? dev.code : dev;
+      var found = deviceCatalogue.concat(boleroDeviceCatalogue).find(function(x) { return x.code === code; });
+      return found ? found.label : code;
     }
     function deviceName(id) {
       var d = devices.find(function(x) { return x.id === id; });
@@ -927,7 +1167,9 @@
       var r = rooms.find(function(x) { return x.id === id; });
       return r ? (r.name || 'Unnamed room') : '';
     }
-    function miscLabel(code) {
+    function miscLabel(item) {
+      if (item && item.label) return item.label;
+      var code = item && item.code !== undefined ? item.code : item;
       var m = miscCatalogue.find(function(x) { return x.code === code; });
       return m ? m.label : code;
     }
@@ -948,7 +1190,7 @@
 
     var deviceRows = devices.map(function(d) {
       return {
-        name: d.name || 'Unnamed', type: deviceLabel(d.code), code: d.code,
+        name: d.name || 'Unnamed', type: deviceLabel(d), code: d.code,
         room: roomName(d.roomId) || 'not assigned', spot: d.location || '-'
       };
     });
@@ -956,7 +1198,8 @@
     var antennaRows = antennaPlan.map(function(p) {
       return {
         room: p.room, packCount: p.packCount, roaming: p.roaming,
-        antennaLabel: p.antenna.label, antennaCode: p.antenna.code, count: p.count
+        antennaLabel: p.antenna.label, antennaCode: p.antenna.code, count: p.count,
+        mode: p.mode ? p.mode.label : null, roamingConflict: !!p.roamingConflict
       };
     });
 
@@ -979,16 +1222,22 @@
     });
 
     var miscRows = miscItems.map(function(m) {
-      return { item: miscLabel(m.code), code: m.code, qty: m.qty };
+      return { item: miscLabel(m), code: m.code, qty: m.qty };
     });
 
     var tally = {};
+    var AMBIGUOUS_CODES = [BOLERO_MISC_CODE, BOLERO_WIRELESS_CODE];
     function add(code, label, qty) {
-      if (!tally[code]) tally[code] = { label: label, qty: 0 };
-      tally[code].qty += qty;
+      // Bolero's codes aren't unique per item (multiple device types share
+      // "MISC"), so fold the label into the tally key for those — otherwise
+      // distinct items would silently merge into one row under whichever
+      // label happened to be added first.
+      var key = AMBIGUOUS_CODES.indexOf(code) !== -1 ? code + '::' + label : code;
+      if (!tally[key]) tally[key] = { code: code, label: label, qty: 0 };
+      tally[key].qty += qty;
     }
     devices.forEach(function(d) {
-      add(d.code, deviceLabel(d.code), 1);
+      add(d.code, deviceLabel(d), 1);
       if (isStationCode(d.code)) add(STATION_PSU.code, STATION_PSU.label, 1);
     });
     antennaPlan.forEach(function(p) { add(p.antenna.code, p.antenna.label, p.count); });
@@ -998,12 +1247,13 @@
       add(CHARGER_PSU.code, CHARGER_PSU.label, batteryPlan.chargers);
     }
     if (radioYes) add(RDX_CODE, 'RDX Radio Interface', 1);
-    miscItems.forEach(function(m) { add(m.code, miscLabel(m.code), m.qty); });
-    var kitRows = Object.keys(tally).sort().map(function(c) {
-      return { code: c, item: tally[c].label, qty: tally[c].qty };
+    miscItems.forEach(function(m) { add(m.code, miscLabel(m), m.qty); });
+    var kitRows = Object.keys(tally).sort().map(function(key) {
+      return { code: tally[key].code, item: tally[key].label, qty: tally[key].qty };
     });
 
     return {
+      system: currentSystem(),
       jobNumber: jobNumber, showName: showName, filledBy: filledBy,
       rooms: roomRows, links: linkRows, devices: deviceRows,
       antenna: antennaRows, battery: batteryPlan,
@@ -1016,8 +1266,9 @@
 
   function buildSummary() {
     var d = gatherPlanData();
+    var systemLabel = d.system === 'bolero' ? 'RIEDEL BOLERO' : 'GREEN-GO';
 
-    var out = 'GREEN-GO SYSTEM PLANNER (' + PLANNER_VERSION + ')\n';
+    var out = 'SHOW COMMUNICATIONS SYSTEMS PLANNER — ' + systemLabel + ' (' + PLANNER_VERSION + ')\n';
     out += 'Job number: ' + d.jobNumber + '\n';
     out += 'Show / event: ' + d.showName + '\n';
     out += 'Filled in by: ' + d.filledBy + '\n';
@@ -1049,6 +1300,13 @@
     out += '\nANTENNA COVERAGE (calculated)\n';
     if (d.antenna.length === 0) {
       out += '  No wireless beltpacks assigned to rooms yet\n';
+    } else if (d.system === 'bolero') {
+      d.antenna.forEach(function(p) {
+        out += '  - ' + p.room + ': ' + p.packCount + ' wireless pack(s) — ' + p.mode + ' -> ' + p.count + ' x antenna (10 packs each)\n';
+        if (p.roamingConflict) {
+          out += '    !! Roaming user present but Standalone Link can\'t roam — change mode or remove roaming flag\n';
+        }
+      });
     } else {
       d.antenna.forEach(function(p) {
         out += '  - ' + p.room + ': ' + p.packCount + ' wireless pack(s), ' + (p.roaming ? 'roaming user present' : 'no roaming') +
@@ -1056,10 +1314,16 @@
       });
     }
 
-    out += '\nBATTERIES & CHARGERS (calculated)\n';
-    out += '  ' + d.battery.base + ' wireless pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries\n';
-    out += '  -> ' + d.battery.chargers + ' x ' + CHARGER.label + ' (' + CHARGER.code + ')\n';
-    out += '  -> ' + d.battery.chargers + ' x ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')\n';
+    if (d.system === 'bolero') {
+      out += '\nCHARGING DOCKS (calculated)\n';
+      out += '  Batteries are integrated into Bolero packs — no separate battery count.\n';
+      out += '  ' + d.battery.base + ' wireless pack(s) -> ' + d.battery.chargers + ' x charging dock (5 packs each)\n';
+    } else {
+      out += '\nBATTERIES & CHARGERS (calculated)\n';
+      out += '  ' + d.battery.base + ' wireless pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries\n';
+      out += '  -> ' + d.battery.chargers + ' x ' + CHARGER.label + ' (' + CHARGER.code + ')\n';
+      out += '  -> ' + d.battery.chargers + ' x ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')\n';
+    }
 
     out += '\nUSERS (' + d.users.length + ')\n';
     if (d.users.length === 0) {
@@ -1075,7 +1339,7 @@
       });
     }
 
-    out += '\nGROUPS (' + d.groups.length + ')\n';
+    out += '\nGROUPS / PARTYLINES (' + d.groups.length + ')\n';
     if (d.groups.length === 0) out += '  none listed\n';
     d.groups.forEach(function(g) {
       out += '  - ' + g.name + '\n';
@@ -1097,13 +1361,15 @@
       out += '  Not required\n';
     }
 
-    out += '\nRADIO INTEGRATION\n';
-    if (d.radio.needed) {
-      out += '  Radio model: ' + (d.radio.model || 'not specified') + '\n';
-      out += '  Supplied by: ' + (d.radio.supplier || 'not specified') + '\n';
-      out += '  Requires: GREEN GO RDX RADIO INTERFACE (' + RDX_CODE + ')\n';
-    } else {
-      out += '  Not required\n';
+    if (d.system !== 'bolero') {
+      out += '\nRADIO INTEGRATION\n';
+      if (d.radio.needed) {
+        out += '  Radio model: ' + (d.radio.model || 'not specified') + '\n';
+        out += '  Supplied by: ' + (d.radio.supplier || 'not specified') + '\n';
+        out += '  Requires: GREEN GO RDX RADIO INTERFACE (' + RDX_CODE + ')\n';
+      } else {
+        out += '  Not required\n';
+      }
     }
 
     out += '\nMISC / INTERFACES\n';
@@ -1244,17 +1510,18 @@
     }
 
     var d = gatherPlanData();
+    var systemName = d.system === 'bolero' ? 'Riedel Bolero' : 'Green-GO';
 
     // ---- Header: logo + title block ----
     try { doc.addImage(LOGO_DATA_URI, 'PNG', margin, y, 52, 56); } catch (e) {}
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(17);
     doc.setTextColor(INK[0], INK[1], INK[2]);
-    doc.text('Green-GO system planner', margin + 66, y + 22);
+    doc.text('Show Communications Systems Planner', margin + 66, y + 22);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
-    doc.text('4wall Entertainment — comms build sheet — ' + PLANNER_VERSION, margin + 66, y + 37);
+    doc.text('4wall Entertainment — ' + systemName + ' build sheet — ' + PLANNER_VERSION, margin + 66, y + 37);
     y += 70;
 
     doc.setDrawColor(BORDER[0], BORDER[1], BORDER[2]);
@@ -1311,9 +1578,20 @@
     }
 
     // ---- Antenna coverage ----
-    sectionHeading('Antenna coverage (calculated)', estimateTableHeight(d.antenna.length));
+    sectionHeading('Antenna coverage (calculated)', estimateTableHeight(d.antenna.length) + (d.antenna.some(function(p) { return p.roamingConflict; }) ? 20 : 0));
     if (d.antenna.length === 0) {
       prose('No wireless beltpacks assigned to rooms yet.', { color: MUTED });
+    } else if (d.system === 'bolero') {
+      table(
+        ['Room', 'Packs', 'Antenna mode', 'Qty needed'],
+        d.antenna.map(function(p) { return [p.room, String(p.packCount), p.mode, String(p.count)]; }),
+        { 1: { halign: 'center', cellWidth: 50 }, 3: { halign: 'center', cellWidth: 70 } }
+      );
+      d.antenna.forEach(function(p) {
+        if (p.roamingConflict) {
+          prose('\u26a0 ' + p.room + ': a user roams between rooms, but Standalone Link can\'t roam. Use Integrated Artist or Standalone AES67 here instead.', { size: 9, color: [153, 60, 29] });
+        }
+      });
     } else {
       table(
         ['Room', 'Packs', 'Roaming?', 'Antenna type', 'Qty needed'],
@@ -1325,10 +1603,16 @@
     }
 
     // ---- Batteries & chargers ----
-    sectionHeading('Batteries & chargers (calculated)', 3 * 13 + 10);
-    prose(d.battery.base + ' wireless pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries total', { size: 10 });
-    prose('\u2192 ' + d.battery.chargers + ' \u00d7 ' + CHARGER.label + ' (' + CHARGER.code + ')', { size: 9.5, color: MUTED });
-    prose('\u2192 ' + d.battery.chargers + ' \u00d7 ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')', { size: 9.5, color: MUTED });
+    if (d.system === 'bolero') {
+      sectionHeading('Charging docks (calculated)', 2 * 13 + 10);
+      prose('Batteries are integrated into Bolero packs — no separate battery count.', { size: 9.5, color: MUTED });
+      prose(d.battery.base + ' wireless pack(s) \u2192 ' + d.battery.chargers + ' \u00d7 charging dock (5 packs each)', { size: 10 });
+    } else {
+      sectionHeading('Batteries & chargers (calculated)', 3 * 13 + 10);
+      prose(d.battery.base + ' wireless pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries total', { size: 10 });
+      prose('\u2192 ' + d.battery.chargers + ' \u00d7 ' + CHARGER.label + ' (' + CHARGER.code + ')', { size: 9.5, color: MUTED });
+      prose('\u2192 ' + d.battery.chargers + ' \u00d7 ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')', { size: 9.5, color: MUTED });
+    }
     spacer(6);
 
     // ---- Users ----
@@ -1345,7 +1629,7 @@
 
     // ---- Groups ----
     var totalGroupMemberRows = d.groups.reduce(function(sum, g) { return sum + Math.max(g.members.length, 1); }, 0);
-    sectionHeading('Groups (' + d.groups.length + ')', estimateTableHeight(totalGroupMemberRows));
+    sectionHeading('Groups / Partylines (' + d.groups.length + ')', estimateTableHeight(totalGroupMemberRows));
     if (d.groups.length === 0) {
       prose('No groups listed.', { color: MUTED });
     } else {
@@ -1380,15 +1664,17 @@
     spacer(6);
 
     // ---- Radio integration ----
-    sectionHeading('Radio integration', d.radio.needed ? (3 * 13 + 10) : (13 + 10));
-    if (d.radio.needed) {
-      prose('Radio model: ' + (d.radio.model || 'not specified'), { size: 10 });
-      prose('Supplied by: ' + (d.radio.supplier || 'not specified'), { size: 10 });
-      prose('Requires: RDX Radio Interface (' + RDX_CODE + ')', { size: 9.5, color: MUTED });
-    } else {
-      prose('Not required.', { color: MUTED });
+    if (d.system !== 'bolero') {
+      sectionHeading('Radio integration', d.radio.needed ? (3 * 13 + 10) : (13 + 10));
+      if (d.radio.needed) {
+        prose('Radio model: ' + (d.radio.model || 'not specified'), { size: 10 });
+        prose('Supplied by: ' + (d.radio.supplier || 'not specified'), { size: 10 });
+        prose('Requires: RDX Radio Interface (' + RDX_CODE + ')', { size: 9.5, color: MUTED });
+      } else {
+        prose('Not required.', { color: MUTED });
+      }
+      spacer(6);
     }
-    spacer(6);
 
     // ---- Misc / interfaces ----
     sectionHeading('Misc / interfaces', estimateTableHeight(d.misc.length));
@@ -1454,8 +1740,9 @@
     var totalAntennas = d.antenna.reduce(function(sum, p) { return sum + p.count; }, 0);
     var notableBits = [];
     if (d.links.length > 0) notableBits.push(d.links.length + ' room-to-room link(s)');
-    if (d.radio.needed) notableBits.push('radio integration (' + (d.radio.model || 'model not given') + ')');
+    if (d.system !== 'bolero' && d.radio.needed) notableBits.push('radio integration (' + (d.radio.model || 'model not given') + ')');
     if (d.programAudio.needed) notableBits.push('program audio required');
+    if (d.system === 'bolero' && d.antenna.some(function(p) { return p.roamingConflict; })) notableBits.push('antenna mode conflict — check Standalone Link rooms');
 
     // Full per-section detail, formatted as short readable lines (not a rigid
     // table — email clients don't reliably render fixed-width text — but with
@@ -1470,12 +1757,19 @@
       return r.name + ' — ' + r.type + ' (' + r.code + ') — room: ' + r.room + (r.spot !== '-' ? ', ' + r.spot : '');
     }).join('\n');
     var antennaText = d.antenna.length === 0 ? 'No wireless beltpacks assigned to rooms yet' : d.antenna.map(function(p) {
+      if (d.system === 'bolero') {
+        var conflictNote = p.roamingConflict ? ' [!! roaming user present but Standalone Link cannot roam]' : '';
+        return p.room + ': ' + p.packCount + ' pack(s) — ' + p.mode + ' -> ' + p.count + ' x antenna (10 packs each)' + conflictNote;
+      }
       return p.room + ': ' + p.packCount + ' pack(s), ' + (p.roaming ? 'roaming — needs Stride' : 'no roaming — WAA fine') +
         ' -> ' + p.count + ' x ' + p.antennaLabel + ' (' + p.antennaCode + ')';
     }).join('\n');
-    var batteryText = d.battery.base + ' pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries\n' +
-      '-> ' + d.battery.chargers + ' x ' + CHARGER.label + ' (' + CHARGER.code + ')\n' +
-      '-> ' + d.battery.chargers + ' x ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')';
+    var batteryText = d.system === 'bolero'
+      ? 'Batteries are integrated into Bolero packs — no separate battery count.\n' +
+        d.battery.base + ' wireless pack(s) -> ' + d.battery.chargers + ' x charging dock (5 packs each)'
+      : d.battery.base + ' pack(s) + ' + d.battery.spares + ' spare(s) = ' + d.battery.total + ' batteries\n' +
+        '-> ' + d.battery.chargers + ' x ' + CHARGER.label + ' (' + CHARGER.code + ')\n' +
+        '-> ' + d.battery.chargers + ' x ' + CHARGER_PSU.label + ' (' + CHARGER_PSU.code + ')';
     var usersText = d.users.length === 0 ? '(none listed)' : d.users.map(function(r) {
       return r.name + ' — ' + r.role + ' — device: ' + r.device + ' — headset: ' + r.headset + (r.roaming !== '-' ? ' — roaming: ' + r.roaming : '');
     }).join('\n');
@@ -1487,15 +1781,19 @@
     var pgmText = d.programAudio.needed
       ? 'Source: ' + (d.programAudio.source || 'not specified') + '\nRouted to: ' + (d.programAudio.groups.length > 0 ? d.programAudio.groups.join(', ') : 'not specified')
       : 'Not required';
-    var radioText = d.radio.needed
-      ? 'Model: ' + (d.radio.model || 'not specified') + '\nSupplied by: ' + (d.radio.supplier || 'not specified') + '\nRequires: RDX Radio Interface (' + RDX_CODE + ')'
-      : 'Not required';
+    var radioText = d.system === 'bolero'
+      ? 'Not applicable (Bolero)'
+      : (d.radio.needed
+        ? 'Model: ' + (d.radio.model || 'not specified') + '\nSupplied by: ' + (d.radio.supplier || 'not specified') + '\nRequires: RDX Radio Interface (' + RDX_CODE + ')'
+        : 'Not required');
     var miscText = d.misc.length === 0 ? '(none added)' : d.misc.map(function(r) { return r.item + ' (' + r.code + ') x' + r.qty; }).join('\n');
     var kitLines = d.kit.length === 0 ? '(no items yet)' : d.kit.map(function(r) { return r.code + '  ' + r.item + '  x' + r.qty; }).join('\n');
+    var systemLabel = d.system === 'bolero' ? 'Riedel Bolero' : 'Green-GO';
 
     var payload = {
-      subject: 'Green-GO planner: ' + (d.jobNumber !== '(not given)' ? d.jobNumber + ' — ' : '') + d.showName,
+      subject: 'Comms planner (' + systemLabel + '): ' + (d.jobNumber !== '(not given)' ? d.jobNumber + ' — ' : '') + d.showName,
       planner_version: PLANNER_VERSION,
+      system: systemLabel,
       job_number: d.jobNumber,
       show_event: d.showName,
       filled_in_by: d.filledBy,
@@ -1514,7 +1812,7 @@
       antenna_coverage: antennaText,
       batteries_chargers: batteryText,
       users: usersText,
-      groups: groupsText,
+      groups_partylines: groupsText,
       program_audio: pgmText,
       radio_integration: radioText,
       misc_interfaces: miscText,
@@ -1542,7 +1840,7 @@
   });
 
   rooms.push({ id: uid('room'), name: '' });
-  devices.push({ id: uid('dev'), name: '', code: deviceCatalogue[0].code, location: '', roomId: '' });
+  devices.push({ id: uid('dev'), name: '', code: activeDeviceCatalogue()[0].code, typeLabel: activeDeviceCatalogue()[0].label, location: '', roomId: '' });
   users.push({ id: uid('usr'), name: '', role: '', deviceId: '', headset: headsetTypes[0], roaming: false });
   groups.push({ id: uid('grp'), name: '', members: {} });
   renderRooms();
