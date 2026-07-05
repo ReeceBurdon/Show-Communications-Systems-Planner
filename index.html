@@ -59,6 +59,8 @@
   .section { margin-bottom: 32px; }
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .section-desc { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+  .req { color: #993C1D; font-weight: 700; margin-left: 3px; font-size: 13px; }
+  h2 .req { font-size: 15px; }
   .row {
     background: var(--card);
     border: 1px solid var(--border);
@@ -209,7 +211,7 @@
     <span class="version-tag" id="version-tag"></span>
   </div>
   <h1 id="page-title">Show Communications Systems Planner</h1>
-  <p class="sub">Fill in who needs to talk to who. No tech knowledge needed — leave anything blank if you're not sure. When you're done, hit submit at the bottom and it'll land straight in Reece's inbox.</p>
+  <p class="sub">Fill in who needs to talk to who. No tech knowledge needed — leave anything blank if you're not sure. When you're done, hit submit at the bottom and it'll land straight in Reece's inbox. <span class="req">*</span> marks required fields.</p>
 
   <div class="system-toggle">
     <label class="system-toggle-option">
@@ -240,8 +242,9 @@
   <hr>
 
   <div class="section">
-    <h2>Rooms / zones</h2>
+    <h2>Rooms / zones<span class="req">*</span></h2>
     <p class="section-desc">Every physical space with any kit in it — list all of them, wireless or not. This is your site plan.</p>
+    <p style="font-size:11px; color:var(--muted); margin:0 0 6px;"><span class="req">*</span> Each room needs a name.</p>
     <div id="room-list"></div>
     <button id="add-room" class="btn-add btn-add-below" type="button"><span>+</span>Add room</button>
 
@@ -256,8 +259,9 @@
   <hr>
 
   <div class="section">
-    <h2>Devices</h2>
+    <h2>Devices<span class="req">*</span></h2>
     <p class="section-desc">Every beltpack, desk station or rack unit — give it a room, and an optional note for exactly where it sits.</p>
+    <p style="font-size:11px; color:var(--muted); margin:0 0 6px;"><span class="req">*</span> Name and room are required per device.</p>
     <div id="device-list"></div>
     <button id="add-device" class="btn-add btn-add-below" type="button"><span>+</span>Add device</button>
     <div id="antenna-summary" class="calc-box" style="display:none;"></div>
@@ -288,8 +292,9 @@
   <hr>
 
   <div class="section">
-    <h2>Users</h2>
+    <h2>Users<span class="req">*</span></h2>
     <p class="section-desc">Who's on the system, their role, device, headset, and whether they move between rooms.</p>
+    <p style="font-size:11px; color:var(--muted); margin:0 0 6px;"><span class="req">*</span> Name, role, and device are required per user.</p>
     <div id="user-list"></div>
     <button id="add-user" class="btn-add btn-add-below" type="button"><span>+</span>Add user</button>
   </div>
@@ -297,8 +302,9 @@
   <hr>
 
   <div class="section">
-    <h2>Groups / Partylines</h2>
+    <h2>Groups / Partylines<span class="req">*</span></h2>
     <p class="section-desc">Riedel calls these partylines. A channel of people who talk together — e.g. "Camera", "Stage Management". Tick who's in it, and whether they can talk or only listen. If members span more than one room, that's a cross-room talk link — it's flagged automatically.</p>
+    <p style="font-size:11px; color:var(--muted); margin:0 0 6px;"><span class="req">*</span> Name and at least one member are required per group.</p>
     <div id="group-list"></div>
     <button id="add-group" class="btn-add btn-add-below" type="button"><span>+</span>Add group</button>
   </div>
@@ -307,21 +313,10 @@
 
   <div class="section">
     <h2>Program audio</h2>
-    <p class="section-desc">Does any outside audio need to be piped into the comms system — a show feed, a paging mic, a stage mix?</p>
-    <div class="radio-group">
-      <label><input type="radio" name="pgm-needed" value="yes" id="pgm-yes">Yes</label>
-      <label><input type="radio" name="pgm-needed" value="no" id="pgm-no" checked>No</label>
-    </div>
-    <div id="pgm-detail" class="conditional">
-      <div>
-        <label for="pgm-source">What's the audio source?</label>
-        <input type="text" id="pgm-source" placeholder="e.g. FOH mix, paging mic, broadcast feed">
-      </div>
-      <div>
-        <label>Which group(s)/partyline(s) should hear it?</label>
-        <div id="pgm-group-checks" style="display: flex; flex-direction: column; gap: 6px;"></div>
-      </div>
-    </div>
+    <p class="section-desc">Add one row per outside audio source that needs feeding into the comms system — e.g. FOH mix, broadcast feed, paging mic. Each input routes to a single group/partyline.</p>
+    <p style="font-size:11px; color:var(--muted); margin:0 0 6px;">If you add an input, <span class="req">*</span> source and group routing are required.</p>
+    <div id="pgm-list"></div>
+    <button id="add-pgm" class="btn-add btn-add-below" type="button"><span>+</span>Add program audio input</button>
   </div>
 
   <hr>
@@ -335,11 +330,11 @@
     </div>
     <div id="radio-detail" class="conditional">
       <div>
-        <label for="radio-model">Radio model being used</label>
+        <label for="radio-model">Radio model being used<span class="req">*</span></label>
         <input type="text" id="radio-model" placeholder="e.g. Motorola DP4600">
       </div>
       <div>
-        <label for="radio-supplier">Who's supplying the radios?</label>
+        <label for="radio-supplier">Who's supplying the radios?<span class="req">*</span></label>
         <input type="text" id="radio-supplier" placeholder="e.g. 4wall, client, venue">
       </div>
     </div>
@@ -360,6 +355,7 @@
 
   <hr>
 
+  <div id="validation-panel" style="display:none;background:#FDF0EE;border:1px solid #E8BCBC;border-radius:8px;padding:12px 14px;margin-bottom:12px;"></div>
   <button id="export-btn" class="btn-primary" type="button">Generate summary</button>
 
   <div id="summary-output">
@@ -384,7 +380,7 @@
 (function() {
   // ---- CONFIG ----
   // Bump this string each time you upload a new version, so it's visible on the page.
-  var PLANNER_VERSION = "v3.5";
+  var PLANNER_VERSION = "v4.0";
   // Replace this with your real Formspree endpoint, e.g. "https://formspree.io/f/abcd1234"
   var FORMSPREE_ENDPOINT = "https://formspree.io/f/mbdvddvk";
 
@@ -399,6 +395,16 @@
     { label: "Beltpack (wired)", code: "55300-070" },
     { label: "Beltpack (wireless)", code: "55300-311" }
   ];
+  // Green-GO switch catalogue — lives at room level, not in the flat device list.
+  var switchCatalogue = [
+    { label: "Switch 5-port PoE Unmanaged (SW5)",      code: "21830-35", poePorts: 4 },
+    { label: "Switch 9-port PoE Unmanaged (SW81 1RU)", code: "21830-40", poePorts: 8 },
+    { label: "Switch 16-port PoE Managed (SW18GBX)",   code: "21834-37", poePorts: 8 },
+    { label: "Misc / other switch",                    code: "MISC-SW",  poePorts: null }
+  ];
+  // Green-GO device codes that each consume one PoE port on the switch.
+  // Wireless beltpacks run on battery so are excluded.
+  var POE_DEVICE_CODES = ["55300-011","55300-021","55300-211","55300-201","55300-231","55300-070"];
   var STATION_CODES = ["55300-011", "55300-021", "55300-211", "55300-201", "55300-231"];
   var STATION_PSU = { label: "Power supply 12V", code: "55300-202" };
   var BATTERY_CODE = "55300-312";
@@ -488,7 +494,7 @@
   ];
 
   var rooms = [], devices = [], users = [], groups = [], miscItems = [], links = [];
-  var pgmGroupSelections = {};
+  var pgmInputs = []; // each: { id, source, groupId }
   var boleroAntennaModeChoice = {}; // keyed by room id -> mode value, since the mode is set per room's antenna deployment
 
   function currentSystem() {
@@ -535,10 +541,13 @@
     list.innerHTML = '';
     var isBolero = currentSystem() === 'bolero';
     rooms.forEach(function(r) {
+      if (!r.switches) r.switches = [];
       var devicesInRoom = devices.filter(function(d) { return d.roomId === r.id; });
       var wirelessCount = devicesInRoom.filter(function(d) { return isWirelessCode(d.code); }).length;
       var row = document.createElement('div');
       row.className = 'row row-rooms';
+
+      // Bolero antenna mode selector (when wireless packs present)
       var modeSelectHtml = '';
       if (isBolero && wirelessCount > 0) {
         var currentMode = boleroAntennaModeChoice[r.id] || boleroAntennaModes[0].value;
@@ -550,19 +559,56 @@
           '</select>' +
           '</div>';
       }
+
+      // Switch sub-section (Green-GO only)
+      var switchesHtml = '';
+      if (!isBolero) {
+        var switchRows = r.switches.map(function(sw) {
+          var isMisc = sw.code === 'MISC-SW';
+          var swCat = switchCatalogue.find(function(s) { return s.code === sw.code; });
+          var portInfo = isMisc ? '' : ' <span style="font-size:11px;color:var(--muted);">(' + (swCat ? swCat.poePorts : '?') + ' PoE ports)</span>';
+          return '<div style="margin-top:4px;">' +
+            '<div style="display:grid; grid-template-columns:1.4fr 60px auto; gap:6px; align-items:center;">' +
+            '<div><select data-room="' + r.id + '" data-sw="' + sw.id + '" class="sw-type-select" style="font-size:12.5px;height:30px;padding:4px 8px;width:100%;">' +
+            switchCatalogue.map(function(s) { return '<option value="' + s.code + '"' + (sw.code === s.code ? ' selected' : '') + '>' + s.label + '</option>'; }).join('') +
+            '</select>' + portInfo + '</div>' +
+            '<input type="number" value="' + sw.qty + '" min="1" data-room="' + r.id + '" data-sw="' + sw.id + '" class="sw-qty-input" style="height:30px;font-size:12.5px;padding:4px 6px;">' +
+            '<button data-room="' + r.id + '" data-sw="' + sw.id + '" class="sw-remove btn-remove" type="button" style="padding:4px 8px;font-size:12px;">Remove</button>' +
+            '</div>' +
+            (isMisc ?
+              '<div style="display:grid;grid-template-columns:1fr 110px;gap:6px;margin-top:4px;">' +
+              '<input type="text" placeholder="Describe the switch" value="' + escapeAttr(sw.notes) + '" data-room="' + r.id + '" data-sw="' + sw.id + '" class="sw-notes-input" style="font-size:12.5px;">' +
+              '<input type="number" placeholder="PoE ports" value="' + (sw.ports || '') + '" min="1" data-room="' + r.id + '" data-sw="' + sw.id + '" class="sw-ports-input" style="font-size:12.5px;" title="Number of PoE ports on this switch">' +
+              '</div>' : '') +
+            '</div>';
+        }).join('');
+
+        switchesHtml =
+          '<div style="margin-top:8px;border-top:0.5px solid var(--border);padding-top:8px;">' +
+          '<p style="font-size:12px;color:var(--muted);margin:0 2px;font-weight:500;">SWITCHES <span style="font-weight:normal;color:#993C1D;">— switches must be PoE</span></p>' +
+          (r.switches.length === 0 ? '<p style="font-size:12px;color:var(--muted);margin:0 0 4px;">No switches — add one if needed.</p>' : switchRows) +
+          '<button data-room="' + r.id + '" class="sw-add btn-add" type="button" style="margin-top:4px;font-size:12px;padding:4px 10px;"><span>+</span>Add switch</button>' +
+          '</div>';
+      }
+
       row.innerHTML =
         '<div style="display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:center;">' +
-        '<input type="text" placeholder="Room name, e.g. Main hall" value="' + escapeAttr(r.name) + '" data-id="' + r.id + '" class="room-input">' +
+        '<input type="text" placeholder="Room name (required)" value="' + escapeAttr(r.name) + '" data-id="' + r.id + '" class="room-input" style="' + (!r.name ? 'border-color:#E8BCBC;' : '') + '">' +
         '<button data-id="' + r.id + '" class="room-remove btn-remove" type="button">Remove</button>' +
         '</div>' +
         '<p class="room-meta">' + devicesInRoom.length + ' device' + (devicesInRoom.length === 1 ? '' : 's') +
         (wirelessCount > 0 ? ' — ' + wirelessCount + ' wireless' : ' — no wireless') + '</p>' +
-        modeSelectHtml;
+        modeSelectHtml +
+        switchesHtml;
+
       list.appendChild(row);
     });
+
     if (rooms.length === 0) {
       list.innerHTML = '<p class="empty-note">No rooms yet — add one above before assigning devices.</p>';
     }
+
+    // ---- event listeners ----
     document.querySelectorAll('.bolero-antenna-mode-select').forEach(function(el) {
       el.addEventListener('change', function() {
         boleroAntennaModeChoice[el.dataset.id] = el.value;
@@ -575,6 +621,7 @@
         if (r) r.name = el.value;
         renderAntennaSummary();
         refreshRoomOptionsInDevices();
+        validateAndRefresh();
       });
     });
     document.querySelectorAll('.room-remove').forEach(function(el) {
@@ -591,8 +638,60 @@
         renderLinks();
       });
     });
+    // Switch add button
+    document.querySelectorAll('.sw-add').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (r) { r.switches.push({ id: uid('sw'), code: switchCatalogue[0].code, qty: 1, notes: '' }); renderRooms(); }
+      });
+    });
+    // Switch type change
+    document.querySelectorAll('.sw-type-select').forEach(function(el) {
+      el.addEventListener('change', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (!r) return;
+        var sw = r.switches.find(function(x) { return x.id === el.dataset.sw; });
+        if (sw) { sw.code = el.value; if (sw.code !== 'MISC-SW') sw.notes = ''; renderRooms(); }
+      });
+    });
+    // Switch qty change
+    document.querySelectorAll('.sw-qty-input').forEach(function(el) {
+      el.addEventListener('change', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (!r) return;
+        var sw = r.switches.find(function(x) { return x.id === el.dataset.sw; });
+        if (sw) sw.qty = Math.max(1, parseInt(el.value, 10) || 1);
+      });
+    });
+    // Switch misc notes
+    document.querySelectorAll('.sw-notes-input').forEach(function(el) {
+      el.addEventListener('input', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (!r) return;
+        var sw = r.switches.find(function(x) { return x.id === el.dataset.sw; });
+        if (sw) sw.notes = el.value;
+      });
+    });
+    document.querySelectorAll('.sw-ports-input').forEach(function(el) {
+      el.addEventListener('change', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (!r) return;
+        var sw = r.switches.find(function(x) { return x.id === el.dataset.sw; });
+        if (sw) sw.ports = Math.max(1, parseInt(el.value, 10) || 0);
+        validateAndRefresh();
+      });
+    });
+    // Switch remove
+    document.querySelectorAll('.sw-remove').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var r = rooms.find(function(x) { return x.id === el.dataset.room; });
+        if (r) { r.switches = r.switches.filter(function(x) { return x.id !== el.dataset.sw; }); renderRooms(); }
+      });
+    });
+
     refreshRoomOptionsInDevices();
     renderLinks();
+    validateAndRefresh();
   }
 
   function renderLinks() {
@@ -680,9 +779,9 @@
           }).join('') +
         '</select>' +
         '<div class="row-devices-bottom">' +
-        '<input type="text" placeholder="Device name, e.g. FOH-1" value="' + escapeAttr(d.name) + '" data-id="' + d.id + '" data-field="name" class="dev-input">' +
-        '<select data-id="' + d.id + '" class="dev-room-select">' +
-          '<option value="">Select room...</option>' +
+        '<input type="text" placeholder="Device name (required)" value="' + escapeAttr(d.name) + '" data-id="' + d.id + '" data-field="name" class="dev-input" style="' + (!d.name ? 'border-color:#E8BCBC;' : '') + '">' +
+        '<select data-id="' + d.id + '" class="dev-room-select" style="' + (!d.roomId ? 'border-color:#E8BCBC;' : '') + '">' +
+          '<option value="">Room (required)...</option>' +
           rooms.map(function(r) { return '<option value="' + r.id + '"' + (d.roomId === r.id ? ' selected' : '') + '>' + (r.name || 'Unnamed room') + '</option>'; }).join('') +
         '</select>' +
         '<input type="text" placeholder="Specific spot (optional)" value="' + escapeAttr(d.location) + '" data-id="' + d.id + '" data-field="location" class="dev-input">' +
@@ -698,6 +797,7 @@
         var d = devices.find(function(x) { return x.id === el.dataset.id; });
         if (d) d[el.dataset.field] = el.value;
         refreshDeviceOptionsInUsers();
+        validateAndRefresh();
       });
     });
     document.querySelectorAll('.dev-type-select').forEach(function(el) {
@@ -743,6 +843,7 @@
     refreshDeviceOptionsInUsers();
     renderAntennaSummary();
     renderBatterySummary();
+    validateAndRefresh();
   }
 
   function calculateAntennaPlan() {
@@ -850,10 +951,10 @@
       card.style.display = 'block';
       card.innerHTML =
         '<div class="row-users-top" style="display:grid;">' +
-        '<input type="text" placeholder="Name" value="' + escapeAttr(u.name) + '" data-id="' + u.id + '" data-field="name" class="usr-input">' +
-        '<input type="text" placeholder="Role, e.g. Stage Manager" value="' + escapeAttr(u.role) + '" data-id="' + u.id + '" data-field="role" class="usr-input">' +
-        '<select data-id="' + u.id + '" class="user-device-select">' +
-          '<option value="">Select device...</option>' +
+        '<input type="text" placeholder="Name (required)" value="' + escapeAttr(u.name) + '" data-id="' + u.id + '" data-field="name" class="usr-input" style="' + (!u.name ? 'border-color:#E8BCBC;' : '') + '">' +
+        '<input type="text" placeholder="Role (required)" value="' + escapeAttr(u.role) + '" data-id="' + u.id + '" data-field="role" class="usr-input" style="' + (!u.role ? 'border-color:#E8BCBC;' : '') + '">' +
+        '<select data-id="' + u.id + '" class="user-device-select" style="' + (!u.deviceId ? 'border-color:#E8BCBC;' : '') + '">' +
+          '<option value="">Device (required)...</option>' +
           devices.map(function(d) { return '<option value="' + d.id + '"' + (u.deviceId === d.id ? ' selected' : '') + '>' + (d.name || 'Unnamed device') + '</option>'; }).join('') +
         '</select>' +
         '<button data-id="' + u.id + '" class="usr-remove btn-remove" type="button">Remove</button>' +
@@ -909,6 +1010,7 @@
         renderAntennaSummary();
       });
     });
+    validateAndRefresh();
   }
 
   function roomsForGroup(g) {
@@ -952,7 +1054,7 @@
         : '';
       card.innerHTML =
         '<div class="group-head">' +
-          '<input type="text" placeholder="Group name, e.g. Camera" value="' + escapeAttr(g.name) + '" data-id="' + g.id + '" class="grp-name-input">' +
+          '<input type="text" placeholder="Group name (required)" value="' + escapeAttr(g.name) + '" data-id="' + g.id + '" class="grp-name-input" style="' + (!g.name ? 'border-color:#E8BCBC;' : '') + '">' +
           '<button data-id="' + g.id + '" class="grp-remove btn-remove" type="button">Remove</button>' +
         '</div>' + membersHtml + crossRoomNote;
       list.appendChild(card);
@@ -964,6 +1066,7 @@
       el.addEventListener('input', function() {
         var g = groups.find(function(x) { return x.id === el.dataset.id; });
         if (g) g.name = el.value;
+        validateAndRefresh();
       });
     });
     document.querySelectorAll('.grp-remove').forEach(function(el) {
@@ -989,30 +1092,63 @@
         g.members[el.dataset.user].perm = el.value;
       });
     });
-    renderPgmGroupChecklist();
+    renderPgmInputs();
+    validateAndRefresh();
   }
 
-  function renderPgmGroupChecklist() {
-    var box = document.getElementById('pgm-group-checks');
-    // drop selections for groups that no longer exist
-    Object.keys(pgmGroupSelections).forEach(function(gid) {
-      if (!groups.some(function(g) { return g.id === gid; })) delete pgmGroupSelections[gid];
+  function renderPgmInputs() {
+    var list = document.getElementById('pgm-list');
+    list.innerHTML = '';
+    // Build set of group IDs already claimed by another input — each group
+    // can only receive one PGM source, so claimed groups are disabled in all
+    // other inputs' dropdowns.
+    var claimedGroupIds = {};
+    pgmInputs.forEach(function(p) { if (p.groupId) claimedGroupIds[p.groupId] = p.id; });
+
+    pgmInputs.forEach(function(p) {
+      // Drop groupId if the group no longer exists.
+      if (p.groupId && !groups.some(function(g) { return g.id === p.groupId; })) p.groupId = '';
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.display = 'block';
+      var groupOptions = '<option value="">Select group/partyline...</option>' + groups.map(function(g) {
+        var isClaimed = claimedGroupIds[g.id] && claimedGroupIds[g.id] !== p.id;
+        return '<option value="' + g.id + '"' + (p.groupId === g.id ? ' selected' : '') + (isClaimed ? ' disabled' : '') + '>' +
+          (g.name || 'Unnamed group') + (isClaimed ? ' (already routed)' : '') + '</option>';
+      }).join('');
+      row.innerHTML =
+        '<div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center;">' +
+        '<input type="text" placeholder="Source (required)" value="' + escapeAttr(p.source) + '" data-id="' + p.id + '" class="pgm-source-input" style="' + (!p.source ? 'border-color:#E8BCBC;' : '') + '">' +
+        '<select data-id="' + p.id + '" class="pgm-group-select" style="' + (!p.groupId ? 'border-color:#E8BCBC;' : '') + '">' + groupOptions + '</select>' +
+        '<button data-id="' + p.id + '" class="pgm-remove btn-remove" type="button">Remove</button>' +
+        '</div>' +
+        (groups.length === 0 ? '<p style="font-size:12.5px; color:var(--muted); margin:6px 0 0;">Add some groups/partylines above before routing PGM.</p>' : '');
+      list.appendChild(row);
     });
-    if (groups.length === 0) {
-      box.innerHTML = '<p class="empty-note">Add some groups above first.</p>';
-      return;
+    if (pgmInputs.length === 0) {
+      list.innerHTML = '<p class="empty-note">No program audio inputs yet — add one below if needed.</p>';
     }
-    box.innerHTML = groups.map(function(g) {
-      var checked = pgmGroupSelections[g.id] ? 'checked' : '';
-      return '<label style="display:flex; align-items:center; gap:6px; cursor:pointer; margin:0; font-size:14px;">' +
-        '<input type="checkbox" data-group="' + g.id + '" class="pgm-group-check" ' + checked + ' style="width:auto;">' +
-        (g.name || 'Unnamed group') + '</label>';
-    }).join('');
-    document.querySelectorAll('.pgm-group-check').forEach(function(el) {
-      el.addEventListener('change', function() {
-        pgmGroupSelections[el.dataset.group] = el.checked;
+    document.querySelectorAll('.pgm-source-input').forEach(function(el) {
+      el.addEventListener('input', function() {
+        var p = pgmInputs.find(function(x) { return x.id === el.dataset.id; });
+        if (p) p.source = el.value;
+        validateAndRefresh();
       });
     });
+    document.querySelectorAll('.pgm-group-select').forEach(function(el) {
+      el.addEventListener('change', function() {
+        var p = pgmInputs.find(function(x) { return x.id === el.dataset.id; });
+        if (p) p.groupId = el.value;
+        renderPgmInputs(); // re-render to update disabled states in other rows
+      });
+    });
+    document.querySelectorAll('.pgm-remove').forEach(function(el) {
+      el.addEventListener('click', function() {
+        pgmInputs = pgmInputs.filter(function(x) { return x.id !== el.dataset.id; });
+        renderPgmInputs();
+      });
+    });
+    validateAndRefresh();
   }
 
   function renderMisc() {
@@ -1038,7 +1174,7 @@
   }
 
   document.getElementById('add-room').addEventListener('click', function() {
-    rooms.push({ id: uid('room'), name: '' });
+    rooms.push({ id: uid('room'), name: '', switches: [] });
     renderRooms();
   });
   document.getElementById('add-link').addEventListener('click', function() {
@@ -1091,6 +1227,7 @@
     renderAntennaSummary();
     renderBatterySummary();
     renderMisc();
+    validateAndRefresh();
   }
   document.getElementById('system-greengo').addEventListener('change', onSystemChange);
   document.getElementById('system-bolero').addEventListener('change', onSystemChange);
@@ -1125,16 +1262,19 @@
     renderMisc();
   });
 
-  document.getElementById('pgm-yes').addEventListener('change', togglePgm);
-  document.getElementById('pgm-no').addEventListener('change', togglePgm);
-  function togglePgm() {
-    document.getElementById('pgm-detail').classList.toggle('show', document.getElementById('pgm-yes').checked);
-  }
+  document.getElementById('add-pgm').addEventListener('click', function() {
+    pgmInputs.push({ id: uid('pgm'), source: '', groupId: '' });
+    renderPgmInputs();
+  });
   document.getElementById('radio-yes').addEventListener('change', toggleRadio);
   document.getElementById('radio-no').addEventListener('change', toggleRadio);
   function toggleRadio() {
     document.getElementById('radio-detail').classList.toggle('show', document.getElementById('radio-yes').checked);
+    validateAndRefresh();
   }
+  ['radio-model', 'radio-supplier'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', validateAndRefresh);
+  });
 
   var lastSummaryText = '';
 
@@ -1146,9 +1286,10 @@
     var jobNumber = document.getElementById('job-number').value || '(not given)';
     var showName = document.getElementById('show-name').value || '(untitled)';
     var filledBy = document.getElementById('filled-by').value || '(not given)';
-    var pgmYes = document.getElementById('pgm-yes').checked;
-    var pgmSource = document.getElementById('pgm-source').value;
-    var pgmGroupNames = groups.filter(function(g) { return pgmGroupSelections[g.id]; }).map(function(g) { return g.name || 'Unnamed group'; });
+    var pgmInputRows = pgmInputs.map(function(p) {
+      var g = groups.find(function(x) { return x.id === p.groupId; });
+      return { source: p.source || 'not specified', groupName: g ? (g.name || 'Unnamed group') : 'not assigned' };
+    });
     var radioYes = document.getElementById('radio-yes').checked;
     var radioModel = document.getElementById('radio-model').value;
     var radioSupplier = document.getElementById('radio-supplier').value;
@@ -1180,7 +1321,11 @@
     var roomRows = rooms.map(function(r) {
       var devicesInRoom = devices.filter(function(d) { return d.roomId === r.id; });
       var wirelessCount = devicesInRoom.filter(function(d) { return isWirelessCode(d.code); }).length;
-      return { name: r.name || 'Unnamed', deviceCount: devicesInRoom.length, wirelessCount: wirelessCount };
+      var switchRows = (r.switches || []).map(function(sw) {
+        var cat = switchCatalogue.find(function(s) { return s.code === sw.code; });
+        return { label: sw.code === 'MISC-SW' ? (sw.notes || 'Misc switch') : (cat ? cat.label : sw.code), code: sw.code, qty: sw.qty };
+      });
+      return { name: r.name || 'Unnamed', deviceCount: devicesInRoom.length, wirelessCount: wirelessCount, switches: switchRows };
     });
 
     var linkRows = links.map(function(l) {
@@ -1226,7 +1371,7 @@
     });
 
     var tally = {};
-    var AMBIGUOUS_CODES = [BOLERO_MISC_CODE, BOLERO_WIRELESS_CODE];
+    var AMBIGUOUS_CODES = [BOLERO_MISC_CODE, BOLERO_WIRELESS_CODE, 'MISC-SW'];
     function add(code, label, qty) {
       // Bolero's codes aren't unique per item (multiple device types share
       // "MISC"), so fold the label into the tally key for those — otherwise
@@ -1239,6 +1384,14 @@
     devices.forEach(function(d) {
       add(d.code, deviceLabel(d), 1);
       if (isStationCode(d.code)) add(STATION_PSU.code, STATION_PSU.label, 1);
+    });
+    // Switches live at room level — tally them from each room's switch list.
+    rooms.forEach(function(r) {
+      (r.switches || []).forEach(function(sw) {
+        var cat = switchCatalogue.find(function(s) { return s.code === sw.code; });
+        var label = sw.code === 'MISC-SW' ? (sw.notes || 'Misc switch') : (cat ? cat.label : sw.code);
+        add(sw.code, label, sw.qty);
+      });
     });
     antennaPlan.forEach(function(p) { add(p.antenna.code, p.antenna.label, p.count); });
     if (batteryPlan.total > 0) {
@@ -1258,7 +1411,7 @@
       rooms: roomRows, links: linkRows, devices: deviceRows,
       antenna: antennaRows, battery: batteryPlan,
       users: userRows, groups: groupRows,
-      programAudio: { needed: pgmYes, source: pgmSource, groups: pgmGroupNames },
+      programAudio: pgmInputRows,
       radio: { needed: radioYes, model: radioModel, supplier: radioSupplier },
       misc: miscRows, kit: kitRows
     };
@@ -1277,6 +1430,11 @@
     if (d.rooms.length === 0) out += '  none listed\n';
     d.rooms.forEach(function(r) {
       out += '  - ' + r.name + '  (' + r.deviceCount + ' device(s), ' + r.wirelessCount + ' wireless)\n';
+      if (r.switches && r.switches.length > 0) {
+        r.switches.forEach(function(sw) {
+          out += '      switch: ' + sw.label + '  x' + sw.qty + '\n';
+        });
+      }
     });
     out += '\n  Room-to-room links: ' + (d.links.length === 0 ? 'None required' : d.links.length) + '\n';
     d.links.forEach(function(l) {
@@ -1354,11 +1512,12 @@
     });
 
     out += '\nPROGRAM AUDIO\n';
-    if (d.programAudio.needed) {
-      out += '  Source: ' + (d.programAudio.source || 'not specified') + '\n';
-      out += '  Routed to: ' + (d.programAudio.groups.length > 0 ? d.programAudio.groups.join(', ') : 'not specified') + '\n';
-    } else {
+    if (d.programAudio.length === 0) {
       out += '  Not required\n';
+    } else {
+      d.programAudio.forEach(function(p, idx) {
+        out += '  Input ' + (idx + 1) + ': ' + p.source + ' -> ' + p.groupName + '\n';
+      });
     }
 
     if (d.system !== 'bolero') {
@@ -1395,6 +1554,107 @@
     }
 
     return out;
+  }
+
+
+  // ================================================================
+  // Validation & port-balance engine
+  // ================================================================
+
+  function getRoomPoePorts(r) {
+    return (r.switches || []).reduce(function(sum, sw) {
+      if (sw.code === 'MISC-SW') return sum + (sw.ports || 0) * sw.qty;
+      var cat = switchCatalogue.find(function(s) { return s.code === sw.code; });
+      return sum + (cat ? cat.poePorts * sw.qty : 0);
+    }, 0);
+  }
+
+  function getRoomPoeNeeded(r) {
+    var devicesInRoom = devices.filter(function(d) { return d.roomId === r.id; });
+    var wiredDevices = devicesInRoom.filter(function(d) { return POE_DEVICE_CODES.indexOf(d.code) !== -1; }).length;
+    var antennaPlan = calculateAntennaPlan();
+    var roomPlan = antennaPlan.find(function(p) { return p.room === (r.name || 'Unnamed room'); });
+    var antennas = roomPlan ? roomPlan.count : 0;
+    return wiredDevices + antennas;
+  }
+
+  function validatePlan() {
+    var errors = [];
+    var isBolero = currentSystem() === 'bolero';
+
+    rooms.forEach(function(r, i) {
+      var label = '"' + (r.name || 'Room ' + (i + 1)) + '"';
+      if (!r.name || !r.name.trim()) errors.push('Room ' + (i + 1) + ': needs a name.');
+      if (!isBolero) {
+        var poeNeeded = getRoomPoeNeeded(r);
+        var poeAvail = getRoomPoePorts(r);
+        if (poeNeeded > 0 && (r.switches || []).length === 0) {
+          errors.push(label + ': has ' + poeNeeded + ' PoE device(s)/antenna(s) but no switch assigned.');
+        } else if (poeNeeded > poeAvail && poeAvail > 0) {
+          errors.push(label + ': needs ' + poeNeeded + ' PoE ports but only ' + poeAvail + ' available across assigned switches.');
+        }
+        (r.switches || []).forEach(function(sw, si) {
+          if (sw.code === 'MISC-SW' && !sw.ports) {
+            errors.push(label + ' switch ' + (si + 1) + ': misc switch needs a PoE port count entered.');
+          }
+        });
+      }
+    });
+
+    if (devices.length === 0) errors.push('Devices: at least one device is required.');
+    devices.forEach(function(d, i) {
+      if (!d.name || !d.name.trim()) errors.push('Device ' + (i + 1) + ': needs a name.');
+      if (!d.roomId) errors.push((d.name ? '"' + d.name + '"' : 'Device ' + (i + 1)) + ': must be assigned to a room.');
+    });
+
+    if (users.length === 0) errors.push('Users: at least one user is required.');
+    users.forEach(function(u, i) {
+      var lbl = u.name ? '"' + u.name + '"' : 'User ' + (i + 1);
+      if (!u.name || !u.name.trim()) errors.push('User ' + (i + 1) + ': needs a name.');
+      if (!u.role || !u.role.trim()) errors.push(lbl + ': needs a role.');
+      if (!u.deviceId) errors.push(lbl + ': must be assigned a device.');
+    });
+
+    if (groups.length === 0) errors.push('Groups/Partylines: at least one group is required.');
+    groups.forEach(function(g, i) {
+      var lbl = g.name ? '"' + g.name + '"' : 'Group ' + (i + 1);
+      if (!g.name || !g.name.trim()) errors.push('Group ' + (i + 1) + ': needs a name.');
+      var memberCount = Object.keys(g.members).filter(function(uid) { return g.members[uid].in; }).length;
+      if (memberCount === 0) errors.push(lbl + ': must have at least one member.');
+    });
+
+    pgmInputs.forEach(function(p, i) {
+      if (!p.source || !p.source.trim()) errors.push('Program audio input ' + (i + 1) + ': needs a source description.');
+      if (!p.groupId) errors.push('Program audio input ' + (i + 1) + ': must be routed to a group/partyline.');
+    });
+
+    if (!isBolero && document.getElementById('radio-yes').checked) {
+      if (!document.getElementById('radio-model').value.trim()) errors.push('Radio integration: radio model is required.');
+      if (!document.getElementById('radio-supplier').value.trim()) errors.push('Radio integration: supplier is required.');
+    }
+
+    return errors;
+  }
+
+  function validateAndRefresh() {
+    var errors = validatePlan();
+    var panel = document.getElementById('validation-panel');
+    var exportBtn = document.getElementById('export-btn');
+    var submitBtn = document.getElementById('submit-btn');
+    if (errors.length === 0) {
+      panel.style.display = 'none';
+      panel.innerHTML = '';
+      exportBtn.disabled = false;
+      submitBtn.disabled = false;
+    } else {
+      panel.style.display = 'block';
+      panel.innerHTML =
+        '<p style="font-weight:600;margin:0 0 8px;font-size:13px;color:#993C1D;">' +
+        errors.length + ' issue' + (errors.length === 1 ? '' : 's') + ' to fix before generating:</p>' +
+        errors.map(function(e) { return '<p style="margin:2px 0;font-size:12.5px;">• ' + e + '</p>'; }).join('');
+      exportBtn.disabled = true;
+      submitBtn.disabled = true;
+    }
   }
 
   document.getElementById('export-btn').addEventListener('click', function() {
@@ -1552,9 +1812,14 @@
       prose('No rooms listed.', { color: MUTED });
     } else {
       table(
-        ['Room', 'Devices', 'Wireless'],
-        d.rooms.map(function(r) { return [r.name, String(r.deviceCount), String(r.wirelessCount)]; }),
-        { 1: { halign: 'center', cellWidth: 80 }, 2: { halign: 'center', cellWidth: 80 } }
+        ['Room', 'Devices', 'Wireless', 'Switches'],
+        d.rooms.map(function(r) {
+          var swText = (r.switches && r.switches.length > 0)
+            ? r.switches.map(function(sw) { return sw.label + ' x' + sw.qty; }).join(', ')
+            : '-';
+          return [r.name, String(r.deviceCount), String(r.wirelessCount), swText];
+        }),
+        { 1: { halign: 'center', cellWidth: 55 }, 2: { halign: 'center', cellWidth: 55 } }
       );
     }
     if (d.links.length > 0) {
@@ -1654,12 +1919,15 @@
     }
 
     // ---- Program audio ----
-    sectionHeading('Program audio', d.programAudio.needed ? (2 * 13 + 10) : (13 + 10));
-    if (d.programAudio.needed) {
-      prose('Source: ' + (d.programAudio.source || 'not specified'), { size: 10 });
-      prose('Routed to: ' + (d.programAudio.groups.length > 0 ? d.programAudio.groups.join(', ') : 'not specified'), { size: 10 });
-    } else {
+    sectionHeading('Program audio', estimateTableHeight(Math.max(d.programAudio.length, 1)));
+    if (d.programAudio.length === 0) {
       prose('Not required.', { color: MUTED });
+    } else {
+      table(
+        ['Input', 'Source', 'Routed to group / partyline'],
+        d.programAudio.map(function(p, idx) { return [String(idx + 1), p.source, p.groupName]; }),
+        { 0: { halign: 'center', cellWidth: 40 } }
+      );
     }
     spacer(6);
 
@@ -1741,14 +2009,17 @@
     var notableBits = [];
     if (d.links.length > 0) notableBits.push(d.links.length + ' room-to-room link(s)');
     if (d.system !== 'bolero' && d.radio.needed) notableBits.push('radio integration (' + (d.radio.model || 'model not given') + ')');
-    if (d.programAudio.needed) notableBits.push('program audio required');
+    if (d.programAudio.length > 0) notableBits.push(d.programAudio.length + ' program audio input(s)');
     if (d.system === 'bolero' && d.antenna.some(function(p) { return p.roamingConflict; })) notableBits.push('antenna mode conflict — check Standalone Link rooms');
 
     // Full per-section detail, formatted as short readable lines (not a rigid
     // table — email clients don't reliably render fixed-width text — but with
     // every field present, so this email is complete on its own.
     var roomsText = d.rooms.length === 0 ? '(none listed)' : d.rooms.map(function(r) {
-      return r.name + ' — ' + r.deviceCount + ' device(s), ' + r.wirelessCount + ' wireless';
+      var swNote = (r.switches && r.switches.length > 0)
+        ? ' | switches: ' + r.switches.map(function(sw) { return sw.label + ' x' + sw.qty; }).join(', ')
+        : '';
+      return r.name + ' — ' + r.deviceCount + ' device(s), ' + r.wirelessCount + ' wireless' + swNote;
     }).join('\n');
     var linksText = d.links.length === 0 ? 'None required' : d.links.map(function(l) {
       return l.roomA + ' <-> ' + l.roomB + ' via ' + l.method;
@@ -1778,9 +2049,9 @@
       var crossRoom = g.crossRoom.length > 1 ? '\n  [cross-room: ' + g.crossRoom.join(' <-> ') + ']' : '';
       return g.name + ':\n' + memberLines + crossRoom;
     }).join('\n');
-    var pgmText = d.programAudio.needed
-      ? 'Source: ' + (d.programAudio.source || 'not specified') + '\nRouted to: ' + (d.programAudio.groups.length > 0 ? d.programAudio.groups.join(', ') : 'not specified')
-      : 'Not required';
+    var pgmText = d.programAudio.length === 0
+      ? 'Not required'
+      : d.programAudio.map(function(p, idx) { return 'Input ' + (idx + 1) + ': ' + p.source + ' -> ' + p.groupName; }).join('\n');
     var radioText = d.system === 'bolero'
       ? 'Not applicable (Bolero)'
       : (d.radio.needed
@@ -1839,7 +2110,7 @@
     });
   });
 
-  rooms.push({ id: uid('room'), name: '' });
+  rooms.push({ id: uid('room'), name: '', switches: [] });
   devices.push({ id: uid('dev'), name: '', code: activeDeviceCatalogue()[0].code, typeLabel: activeDeviceCatalogue()[0].label, location: '', roomId: '' });
   users.push({ id: uid('usr'), name: '', role: '', deviceId: '', headset: headsetTypes[0], roaming: false });
   groups.push({ id: uid('grp'), name: '', members: {} });
@@ -1847,6 +2118,7 @@
   renderDevices();
   renderUsers();
   renderGroups();
+  renderPgmInputs();
   renderMisc();
 })();
 </script>
